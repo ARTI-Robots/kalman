@@ -126,7 +126,7 @@ namespace Kalman {
          * @return The updated state estimate
          */
         template<class Control, template<class> class CovarianceBase>
-        const State& predict( const SystemModelType<Control, CovarianceBase>& s, const Control& u )
+        const State& predict( const SystemModelType<Control, CovarianceBase>& s, const Control& u, bool *numeric_stable = nullptr )
         {
             // Compute sigma points
             computeSigmaPoints();
@@ -137,10 +137,19 @@ namespace Kalman {
             // Compute predicted covariance
             if(!computeCovarianceSquareRootFromSigmaPoints(x, sigmaStatePoints, s.getCovarianceSquareRoot(), S))
             {
+                if (numeric_stable != nullptr)
+                {
+                  *numeric_stable = false;
+                  return State();
+                }
                 // TODO: handle numerical error
                 assert(false);
             }
-            
+
+            if (numeric_stable != nullptr)
+            {
+              *numeric_stable = true;
+            }
             // Return predicted state
             return this->getState();
         }
@@ -153,7 +162,7 @@ namespace Kalman {
          * @return The updated state estimate
          */
         template<class Measurement, template<class> class CovarianceBase>
-        const State& update( const MeasurementModelType<Measurement, CovarianceBase>& m, const Measurement& z )
+        const State& update( const MeasurementModelType<Measurement, CovarianceBase>& m, const Measurement& z, bool *numeric_stable = nullptr  )
         {
             SigmaPoints<Measurement> sigmaMeasurementPoints;
             
@@ -164,6 +173,11 @@ namespace Kalman {
             CovarianceSquareRoot<Measurement> S_y;
             if(!computeCovarianceSquareRootFromSigmaPoints(y, sigmaMeasurementPoints, m.getCovarianceSquareRoot(), S_y))
             {
+                if (numeric_stable != nullptr)
+                {
+                  *numeric_stable = false;
+                  return State();
+                }
                 // TODO: handle numerical error
                 assert(false);
             }
@@ -177,10 +191,19 @@ namespace Kalman {
             // Update state covariance
             if(!updateStateCovariance<Measurement>(K, S_y))
             {
+                if (numeric_stable != nullptr)
+                {
+                  *numeric_stable = false;
+                  return State();
+                }
                 // TODO: handle numerical error
                 assert(false);
             }
-            
+
+            if (numeric_stable != nullptr)
+            {
+              *numeric_stable = true;
+            }
             return this->getState();
         }
         
