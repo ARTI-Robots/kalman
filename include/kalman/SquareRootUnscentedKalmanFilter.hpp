@@ -140,7 +140,7 @@ namespace Kalman {
                 if (numeric_stable != nullptr)
                 {
                   *numeric_stable = false;
-                  return State();
+                  return this->getState();
                 }
                 // TODO: handle numerical error
                 assert(false);
@@ -176,7 +176,7 @@ namespace Kalman {
                 if (numeric_stable != nullptr)
                 {
                   *numeric_stable = false;
-                  return State();
+                  return this->getState();
                 }
                 // TODO: handle numerical error
                 assert(false);
@@ -194,7 +194,7 @@ namespace Kalman {
                 if (numeric_stable != nullptr)
                 {
                   *numeric_stable = false;
-                  return State();
+                  return this->getState();
                 }
                 // TODO: handle numerical error
                 assert(false);
@@ -216,16 +216,16 @@ namespace Kalman {
         bool computeSigmaPoints()
         {
             // Get square root of covariance
-            Matrix<T, State::RowsAtCompileTime, State::RowsAtCompileTime> _S  = S.matrixL().toDenseMatrix();
+            Matrix<T, State::RowsAtCompileTime, State::RowsAtCompileTime> S2  = S.matrixL().toDenseMatrix();
             
             // Set left "block" (first column)
             sigmaStatePoints.template leftCols<1>() = x;
             // Set center block with x + gamma * S
             sigmaStatePoints.template block<State::RowsAtCompileTime, State::RowsAtCompileTime>(0,1)
-                    = ( this->gamma * _S).colwise() + x;
+                    = ( this->gamma * S2).colwise() + x;
             // Set right block with x - gamma * S
             sigmaStatePoints.template rightCols<State::RowsAtCompileTime>()
-                    = (-this->gamma * _S).colwise() + x;
+                    = (-this->gamma * S2).colwise() + x;
             
             return true;
         }
